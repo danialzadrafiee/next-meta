@@ -4,6 +4,9 @@ import { MapboxGeoJSONFeature } from "mapbox-gl";
 interface Building {
   fid: number;
   owner_id: number;
+  forsale: boolean;
+  auction?: boolean;
+  basePrice?: number;
 }
 
 interface BuildingStoreState {
@@ -13,8 +16,10 @@ interface BuildingStoreState {
 }
 
 const buildingFakeDb: Building[] = [
-  { fid: 1073, owner_id: 1 },
-  { fid: 1040, owner_id: 1 },
+  { fid: 1073, owner_id: 1, forsale: true, basePrice: 100 },
+  { fid: 1040, owner_id: 1, forsale: false },
+  { fid: 1137, owner_id: 0, forsale: true, basePrice: 50, auction: true },
+  { fid: 755, owner_id: 0, forsale: false },
 ];
 
 const useBuildingStore = create<BuildingStoreState>((set) => ({
