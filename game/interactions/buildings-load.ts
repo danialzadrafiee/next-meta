@@ -1,12 +1,20 @@
 import axios from "axios";
 import useMapStore from "@/store/useMapStore";
-import useBuildingStore from "@/store/useBuildingStore";
+import useBuildingStore, { Building } from "@/store/useBuildingStore";
 
-const getColorForBuilding = (ownership: string, forsale: boolean) => {
-  if (ownership === "you" && !forsale) return "navy";
-  if (ownership === "you" && forsale) return "orange";
-  if (ownership === "" && !forsale) return "cyan";
-  if (ownership === "" && forsale) return "green";
+// Define a new interface for the custom properties
+interface CustomProperties {
+  fid: number;
+  "fill-color": string;
+  owner_id?: number;
+  forsale?: boolean;
+}
+
+const getColorForBuilding = (owner_id: number, forsale: boolean) => {
+  if (owner_id === 1 && !forsale) return "navy";
+  if (owner_id === 1 && forsale) return "orange";
+  if (owner_id === 0 && !forsale) return "cyan";
+  if (owner_id === 0 && forsale) return "green";
   return "#dee4f7";
 };
 
@@ -20,24 +28,21 @@ export const loadBuildings = () => {
         .get("/assets/geojson/karimkhan.geojson")
         .then((response) => {
           const data = response.data;
-          const buildingOwnerMap: { [key: number]: boolean } = {};
-          const buildingForSaleMap: { [key: number]: boolean } = {};
+          const buildingMap: { [key: number]: Building } = {};
 
           buildings.forEach((building) => {
-            buildingOwnerMap[building.fid] = building.owner_id === 1;
-            buildingForSaleMap[building.fid] = building.forsale;
+            buildingMap[building.fid] = building;
           });
 
-          data.features.forEach((feature: any) => {
+          data.features.forEach((feature: GeoJSON.Feature<GeoJSON.Geometry, CustomProperties>) => {
             const fid = feature.properties.fid;
-            if (buildingOwnerMap[fid] !== undefined) {
-              feature.properties.ownership = buildingOwnerMap[fid] ? "you" : "";
-              feature.properties.forsale = buildingForSaleMap[fid];
-            } else {
-              feature.properties.ownership = "unknown";
-              feature.properties.forsale = false;
-            }
-            feature.properties["fill-color"] = getColorForBuilding(feature.properties.ownership, feature.properties.forsale);
+            const building = buildingMap[fid] || {};
+
+            feature.properties = {
+              ...feature.properties,
+              ...building,
+              "fill-color": getColorForBuilding(building.owner_id || 100 , building.forsale || false),
+            };
           });
 
           mapbox.addSource("karimkhan", {

@@ -24,7 +24,7 @@ export const handleBuildingClick = () => {
               "#a3e39c",
               ["has", "fill-color"],
               ["get", "fill-color"],
-              "#dee4f7",
+              "red",
             ]);
           }
           setBuildingDrawerShowing(true);
